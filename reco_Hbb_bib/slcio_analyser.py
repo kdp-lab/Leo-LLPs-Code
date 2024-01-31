@@ -12,7 +12,7 @@ import numpy as np
 ROOT.gROOT.SetBatch()
 
 # Set up some options
-max_events = 5
+max_events = -1
 
 # Gather input files
 # Note: these are using the path convention from the singularity command in the MuCol tutorial (see README)
@@ -154,6 +154,8 @@ chi2 = []
 x = []
 y = []
 z = []
+time = []
+corrected_time = []
 
 h2d_relpt = [] #pfo muon pt resolution vs pt
 
@@ -161,6 +163,9 @@ with open("bad_res.txt", "w") as textfile:
     pass
 with open("no_inner_hits.txt", "w") as textfile:
     pass
+
+speedoflight = 299792458/1000000  # mm/ns
+
 no_inner_hits = 0
 i = 0
 num_matched_tracks = 0
@@ -182,10 +187,10 @@ for f in fnames:
     #     continue
     reader = pyLCIO.IOIMPL.LCFactory.getInstance().createLCReader()
     reader.open(f)
-    for event in reader: 
+    for ievt,event in enumerate(reader): 
         if max_events > 0 and i >= max_events: break
         #if no_inner_hits > np.abs(max_events): break
-        if i%1 == 0: print("Processing event %i."%i)
+        if i%10 == 0: print("Processing event %i."%i)
 
         # Get the collections we care about
         # relationCollection = event.getCollection('MCParticle_SiTracks')
@@ -257,6 +262,8 @@ for f in fnames:
         ix = []
         iy = []
         iz = []
+        itime = []
+        icorrected_time = []
 
 
         # Loop over the reconstructed objects and fill histograms
@@ -430,14 +437,27 @@ for f in fnames:
                         inner_nhit += 1
                     if detector == 5 or detector == 6:
                         outer_nhit += 1
+                    position = hit.getPosition()
+                    pos_x = position[0]
+                    pos_y = position[1]
+                    pos_z = position[2]
 
-                    pos_x = hit.getPosition()[0]
-                    pos_y = hit.getPosition()[1]
-                    pos_z = hit.getPosition()[2]
+                    d = sqrt(position[0]*position[0] + position[1]
+                     * position[1] + position[2]*position[2])
+                    tof = d/speedoflight
+
+                    resolution = 0.03
+                    if detector > 2:
+                        resolution = 0.06
+
+                    corrected_t = hit.getTime()*(1.+ROOT.TRandom3(ievt).Gaus(0., resolution)) - tof
+                    
                     ix.append(pos_x)
                     iy.append(pos_y)
                     iz.append(pos_z)
-                    
+                    itime.append(hit.getTime())
+                    icorrected_time.append(corrected_t)
+
             pixel_nhits.append([pixel_nhit])
             inner_nhits.append([inner_nhit])
             outer_nhits.append([outer_nhit])
@@ -465,6 +485,8 @@ for f in fnames:
         x.append(ix)
         y.append(iy)
         z.append(iz)
+        time.append(itime)
+        corrected_time.append(icorrected_time)
         if len(id0_res_vs_pt) > 0:
             #pt_res_hits.append(ipt_res_hits)
             d0_res_vs_pt.append(id0_res_vs_pt)
@@ -547,11 +569,13 @@ data_list["z0_res_match"] = z0_res_match
 data_list["x"] = x
 data_list["y"] = y
 data_list["z"] = z
+data_list["time"] = time
+data_list["corrected_time"] = corrected_time
 
 data_list["h_2d_relpt"] = h2d_relpt
 
 # After the loop is finished, save the data_list to a .json file
-output_json = "reco_Hbb/output_reco_bib.json"
+output_json = "reco_Hbb/output_reco_nobib_100.json"
 with open(output_json, 'w') as fp:
     json.dump(data_list, fp)
 
