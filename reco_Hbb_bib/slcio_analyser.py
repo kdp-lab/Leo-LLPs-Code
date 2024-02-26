@@ -16,7 +16,7 @@ max_events = -1
 
 # Gather input files
 # Note: these are using the path convention from the singularity command in the MuCol tutorial (see README)
-fnames = glob.glob("/local/d1/lrozanov/mucoll-tutorial-2023/reco_Hbb/output_reco.slcio") 
+fnames = glob.glob("/local/d1/lrozanov/mucoll-tutorial-2023/reco_Hbb/run_14_reco.slcio") 
 print("Found %i files."%len(fnames))
 
 # ############## CREATE EMPTY HISTOGRAM OBJECTS  #############################
@@ -154,8 +154,12 @@ chi2 = []
 x = []
 y = []
 z = []
+hit_pdgid = []
 time = []
 corrected_time = []
+hit_layer = []
+hit_detector = []
+hit_side = []
 
 h2d_relpt = [] #pfo muon pt resolution vs pt
 
@@ -262,8 +266,12 @@ for f in fnames:
         ix = []
         iy = []
         iz = []
+        ihit_pdg = []
         itime = []
         icorrected_time = []
+        ihit_layer = []
+        ihit_detector = []
+        ihit_side = []
 
 
         # Loop over the reconstructed objects and fill histograms
@@ -358,7 +366,7 @@ for f in fnames:
                     id_mu_dphi.append(my_pfo_mu.Phi() - mcp_tlv.Phi())
                     ih2d_relpt.append([mcp_tlv.Perp(), (my_pfo_mu.Perp() - mcp_tlv.Perp())/mcp_tlv.Perp()])
 
-        # Loop over the track objects and fill histograms for D0, Z0, and hit counts
+        # Loop over the track objects
         for track in trackCollection:
             Bfield = 5 #T, 3.57 for legacy
             theta = np.pi/2- np.arctan(track.getTanLambda())
@@ -367,7 +375,7 @@ for f in fnames:
             pt  = 0.3 * Bfield / fabs(track.getOmega() * 1000.)
             track_tlv = ROOT.TLorentzVector()
             track_tlv.SetPtEtaPhiE(pt, eta, phi, 0)
-            dr = mcp_tlv.DeltaR(track_tlv)
+            # dr = mcp_tlv.DeltaR(track_tlv) # I don't think this works
             nhitz = track.getTrackerHits().size()
 
             d0 = track.getD0()
@@ -425,12 +433,19 @@ for f in fnames:
             inner_nhit = 0
             outer_nhit = 0
             for hit in track.getTrackerHits():
+                    try:
+                        mcp = hit.getMCParticle()
+                        hit_pdg = mcp.getPDG()
+                    except:
+                        hit_pdg = 0
                 # now decode hits
                     encoding = hit_collections[0].getParameters().getStringVal(pyLCIO.EVENT.LCIO.CellIDEncoding)
                     decoder = pyLCIO.UTIL.BitField64(encoding)
                     cellID = int(hit.getCellID0())
                     decoder.setValue(cellID)
                     detector = decoder["system"].value()
+                    layer = decoder['layer'].value()
+                    side = decoder["side"].value()
                     if detector == 1 or detector == 2:
                         pixel_nhit += 1
                     if detector == 3 or detector == 4:
@@ -455,8 +470,13 @@ for f in fnames:
                     ix.append(pos_x)
                     iy.append(pos_y)
                     iz.append(pos_z)
+                    ihit_pdg.append(hit_pdg)
                     itime.append(hit.getTime())
                     icorrected_time.append(corrected_t)
+                    ihit_detector.append(detector)
+                    ihit_layer.append(layer)
+                    ihit_side.append(side)
+
 
             pixel_nhits.append([pixel_nhit])
             inner_nhits.append([inner_nhit])
@@ -485,8 +505,12 @@ for f in fnames:
         x.append(ix)
         y.append(iy)
         z.append(iz)
+        hit_pdgid.append(ihit_pdg)
         time.append(itime)
         corrected_time.append(icorrected_time)
+        hit_layer.append(ihit_layer)
+        hit_detector.append(ihit_detector)
+        hit_side.append(ihit_side)
         if len(id0_res_vs_pt) > 0:
             #pt_res_hits.append(ipt_res_hits)
             d0_res_vs_pt.append(id0_res_vs_pt)
@@ -506,9 +530,10 @@ for f in fnames:
         mcp_phi.append(imcp_phi)
         pdgid.append(ipdgid)
         status.append(istatus)
-        mcp_mu_pt.append(imcp_mu_pt)
-        mcp_mu_eta.append(imcp_mu_eta)
-        mcp_mu_phi.append(imcp_mu_phi)
+        if n_mcp_mu > 0:
+            mcp_mu_pt.append(imcp_mu_pt)
+            mcp_mu_eta.append(imcp_mu_eta)
+            mcp_mu_phi.append(imcp_mu_phi)
        
     reader.close()
 
@@ -520,6 +545,7 @@ print("\t%i MCPs"%hists["mcp_pt"].GetEntries())
 print("\t%i mu MCPs"%hists["mcp_mu_pt"].GetEntries())
 print("\tSanity check mcpCollection length:", len(imcp_pt))
 print("\tSanity check trackCollection length:", len(itrack_pt))
+# print("\tSanity check # hits:", len(np.ravel(x)))
 # print("\t%i PFOs"%hists["pfo_pt"].GetEntries())
 # print("\t%i mu PFOs"%hists["pfo_mu_pt"].GetEntries())
 # print('\t%i matched muon tracks'%(num_matched_tracks))
@@ -569,13 +595,17 @@ data_list["z0_res_match"] = z0_res_match
 data_list["x"] = x
 data_list["y"] = y
 data_list["z"] = z
+data_list["hit_pdgid"] = hit_pdgid
 data_list["time"] = time
 data_list["corrected_time"] = corrected_time
+data_list["hit_layer"] = hit_layer
+data_list["hit_detector"] = hit_detector
+data_list["hit_side"] = hit_side
 
 data_list["h_2d_relpt"] = h2d_relpt
 
 # After the loop is finished, save the data_list to a .json file
-output_json = "reco_Hbb/output_reco_nobib_100.json"
+output_json = "../reco_Hbb/run_14_reco.json"
 with open(output_json, 'w') as fp:
     json.dump(data_list, fp)
 
