@@ -11,7 +11,7 @@ This repository contains code for running multi-simulations using DDSIM for stud
 ### Steps:
 1. Run
     ```bash
-    singularity run --nv --bind /cvmfs /local/d1/badea/mu+mu-/mucoll-deploy.sif     
+    singularity run --nv --bind /cvmfs,/local /local/d1/badea/mu+mu-/mucoll-deploy.sif
     source /opt/setup_mucoll.sh
     ```
 2. Make sure your samples are in `/local/d1/mu+mu-/samples`
