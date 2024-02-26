@@ -14,7 +14,7 @@ This repository contains code for running multi-simulations using DDSIM for stud
     singularity run --nv --bind /cvmfs /local/d1/badea/mu+mu-/mucoll-deploy.sif     
     source /opt/setup_mucoll.sh
     ```
-2. Ensure that you have the input samples in the same directory as `sim_Hbb`, within a directory named `samples` (if you're running this in my directory this condition is already met)
+2. Make sure your samples are in `/local/d1/mu+mu-/samples`
 3. Navigate to the `sim_Hbb` directory
 4. Run the following command:
 
