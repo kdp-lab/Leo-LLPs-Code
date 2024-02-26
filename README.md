@@ -11,10 +11,10 @@ This repository contains code for running multi-simulations using DDSIM for stud
 ### Steps:
 1. Run
     ```bash
-    singularity run --nv --bind /cvmfs /local/d1/badea/mu+mu-/mucoll-deploy.sif     
+    singularity run --nv --bind /cvmfs,/local /local/d1/badea/mu+mu-/mucoll-deploy.sif
     source /opt/setup_mucoll.sh
     ```
-2. Ensure that you have the input samples in the same directory as `sim_Hbb`, within a directory named `samples` (if you're running this in my directory this condition is already met)
+2. Make sure your samples are in `/local/d1/mu+mu-/samples` in the form mass_lifetime.hepmc (mass in GeV, lifetime in ns)
 3. Navigate to the `sim_Hbb` directory
 4. Run the following command:
 
