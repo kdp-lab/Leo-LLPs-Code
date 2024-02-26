@@ -16,12 +16,12 @@ if __name__ == "__main__":
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description="Run multiple DDSIM simulations simultaneously.")
     parser.add_argument("input_files", nargs="+", help="List of input files for simulations.")
-    parser.add_argument("-o", "--output_directory", help="Output directory for simulation results.", default="/local/d1/lrozanov/mucoll-tutorial-2023/sim_Hbb")
+    parser.add_argument("-o", "--output_directory", help="Output directory for simulation results.", default="../sim_Hbb")
     parser.add_argument("-j", "--ncpu", help="Number of CPU cores to use.", type=int, default=1)
     args = parser.parse_args()
     
     # Prepend '../samples/' to each input file path
-    input_files = [f"/local/d1/lrozanov/mucoll-tutorial-2023/samples/{input_file}" for input_file in args.input_files]
+    input_files = [f"../samples/{input_file}" for input_file in args.input_files]
 
     # Create a pool of processes for parallel execution
     pool = multiprocessing.Pool(args.ncpu)

@@ -24,7 +24,18 @@ def extract_params(filename):
 
 def generate_modified_tbl(mass, lifetime, width):
     input_tbl_file = "/local/d1/lrozanov/mucoll-tutorial-2023/sim_Hbb/tbl_files/example.tbl"
-    output_tbl_file = f"/local/d1/lrozanov/mucoll-tutorial-2023/sim_Hbb/tbl_files/{mass:.0f}GeV_{lifetime:.0f}mm.tbl"
+    output_tbl_file = f"tbl_files/{mass:.0f}GeV_{lifetime:.0f}mm.tbl"
+    
+    # Check if the output directory exists
+    output_dir = os.path.dirname(output_tbl_file)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)  # Create directory if it doesn't exist
+
+    # Check if the output file exists
+    if os.path.exists(output_tbl_file):
+        print(f"Output file '{output_tbl_file}' already exists. Skipping generation.")
+        return output_tbl_file
+    
     with open(input_tbl_file, 'r') as infile:
         lines = infile.readlines()
 
@@ -81,11 +92,11 @@ def run_ddsim(input_file, output_directory, tbl_file):
     command = [
         "ddsim",
         "--steeringFile",
-        "../mucoll-benchmarks/simulation/ilcsoft/steer_baseline.py",
+        "/local/d1/lrozanov/mucoll-tutorial-2023/mucoll-benchmarks/simulation/ilcsoft/steer_baseline.py",
         "--inputFile",
         input_file,
         "--numberOfEvents",
-        "5",
+        "2",
         "--physics.pdgfile",
         f"{tbl_file}",
         "--outputFile",
