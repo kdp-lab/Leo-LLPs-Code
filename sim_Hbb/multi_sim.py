@@ -21,7 +21,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     # Prepend '../samples/' to each input file path
-    input_files = [f"../samples/{input_file}" for input_file in args.input_files]
+    input_files = [f"/local/d1/mu+mu-/samples/{input_file}" for input_file in args.input_files]
 
     # Create a pool of processes for parallel execution
     pool = multiprocessing.Pool(args.ncpu)
