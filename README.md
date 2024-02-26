@@ -7,6 +7,7 @@ This repository contains code for running multi-simulations using DDSIM for stud
 ### Prerequisites:
 - Clone both [`MuC-tutorial`](https://github.com/MuonColliderSoft/MuC-Tutorial) and [`mucoll-benchmarks`](https://github.com/MuonColliderSoft/mucoll-benchmarks/tree/main) into this directory
 
+If you want to change the number of events to run over, go into `codes/functions.py`, scroll down to `run_ddsim` function, and edit `--numberOfEvents`
 
 ### Steps:
 1. Run
