@@ -20,7 +20,7 @@ if __name__ == "__main__":
     parser.add_argument("-j", "--ncpu", help="Number of CPU cores to use.", type=int, default=1)
     args = parser.parse_args()
     
-    # Prepend '../samples/' to each input file path
+    # Prepend "/local/d1/mu+mu-/samples/' to each input file path
     input_files = [f"/local/d1/mu+mu-/samples/{input_file}" for input_file in args.input_files]
 
     # Create a pool of processes for parallel execution

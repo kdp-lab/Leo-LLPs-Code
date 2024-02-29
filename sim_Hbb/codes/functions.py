@@ -96,7 +96,7 @@ def run_ddsim(input_file, output_directory, tbl_file):
         "--inputFile",
         input_file,
         "--numberOfEvents",
-        "2",
+        "1000",
         "--physics.pdgfile",
         f"{tbl_file}",
         "--outputFile",
