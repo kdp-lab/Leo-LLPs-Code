@@ -49,8 +49,15 @@ if __name__ == "__main__":
     parser.add_argument("-j", "--ncpu", help="Number of CPU cores to use.", type=int, default=1)
     args = parser.parse_args()
 
-    # Prepend "/local/d1/lrozanov/mucoll-tutorial-2023/sim_Hbb/' to each input file path
-    input_files = [f"/local/d1/lrozanov/mucoll-tutorial-2023/sim_Hbb/{input_file}" for input_file in args.input_files]
+
+    if args.reco and args.bib:
+        base_directory = "/local/d1/lrozanov/mucoll-tutorial-2023/digi_Hbb_bib"
+    elif args.reco:
+        base_directory = "/local/d1/lrozanov/mucoll-tutorial-2023/digi_Hbb"
+    else:
+        base_directory = "/local/d1/lrozanov/mucoll-tutorial-2023/sim_Hbb"
+    # Prepend "/local/d1/lrozanov/mucoll-tutorial-2023/ sim or digi' to each input file path
+    input_files = [f"{base_directory}/{input_file}" for input_file in args.input_files]
 
     # Use multiprocessing to parallelize task execution
     with multiprocessing.Pool(args.ncpu) as pool:
