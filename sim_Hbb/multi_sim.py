@@ -16,7 +16,7 @@ if __name__ == "__main__":
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description="Run multiple DDSIM simulations simultaneously.")
     parser.add_argument("input_files", nargs="+", help="List of input files for simulations.")
-    parser.add_argument("-o", "--output_directory", help="Output directory for simulation results.", default="../sim_Hbb")
+    parser.add_argument("-o", "--output_directory", help="Output directory for simulation results.", default="/local/d1/mu+mu-/sim")
     parser.add_argument("-j", "--ncpu", help="Number of CPU cores to use.", type=int, default=1)
     args = parser.parse_args()
     

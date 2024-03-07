@@ -17,13 +17,12 @@ def run_marlin(input_file, bib, reco, output_directory):
     if output_directory is None:
         output_directory = default_output_dir
     
-    pattern = r'(_sim|_digi)\.slcio$'
+    pattern = r'(_sim|_digi|_digi_bib)\.slcio$'
     # Extract the base filename without the path
     base_filename = os.path.basename(input_file)
     # Use re.sub to remove '_sim.slcio' or '_digi.slcio' from the end of the filename
     input_filename = re.sub(pattern, '', base_filename)    
 
-    overlay_option = "Test" if bib else "None"
     bib_suffix = "_bib" if bib else ""
     task_suffix = "reco" if reco else "digi"
     output_file_all = os.path.join(output_directory, f"{input_filename}_{task_suffix}{bib_suffix}.slcio")
@@ -34,10 +33,13 @@ def run_marlin(input_file, bib, reco, output_directory):
         steering_file,
         "--global.LCIOInputFiles="+input_file,
         "--DD4hep.DD4hepXMLFile="+os.getenv("MUCOLL_GEO"),
-        "--Config.Overlay="+overlay_option,
         "--LCIOWriter_all.LCIOOutputFile="+output_file_all,
         "--LCIOWriter_light.LCIOOutputFile="+output_file_light
+        ,"--global.MaxRecordNumber=545"
     ]
+    if bib:
+        command += ["--Config.Overlay=Test"]
+
     subprocess.run(command)
 
 if __name__ == "__main__":
@@ -45,20 +47,27 @@ if __name__ == "__main__":
     parser.add_argument("input_files", nargs="+", help="List of input files for processing.")
     parser.add_argument("-b", "--bib", action='store_true', help="Use the BIB overlay.", default=False)
     parser.add_argument("-r", "--reco", action='store_true', help="Run reconstruction instead of digitisation.", default=False)
-    parser.add_argument("-o", "--output_directory", help="Output directory for task results.", default=None)
+    parser.add_argument("-o", "--output_directory", help="Output directory for task results.", default= "/local/d1/mu+mu-/digi")
     parser.add_argument("-j", "--ncpu", help="Number of CPU cores to use.", type=int, default=1)
     args = parser.parse_args()
 
 
     if args.reco and args.bib:
-        base_directory = "/local/d1/lrozanov/mucoll-tutorial-2023/digi_Hbb_bib"
+        base_directory = "/local/d1/mu+mu-/digi_bib"
+        output_directory = "/local/d1/mu+mu-/reco_bib"
     elif args.reco:
-        base_directory = "/local/d1/lrozanov/mucoll-tutorial-2023/digi_Hbb"
+        base_directory = "/local/d1/mu+mu-/digi"
+        output_directory = "/local/d1/mu+mu-/reco"
     else:
-        base_directory = "/local/d1/lrozanov/mucoll-tutorial-2023/sim_Hbb"
+        base_directory = "/local/d1/mu+mu-/sim"
+        output_directory = "/local/d1/mu+mu-/digi"
+
+    if args.output_directory != "/local/d1/mu+mu-/digi":
+        output_directory = args.output_directory
+
     # Prepend "/local/d1/lrozanov/mucoll-tutorial-2023/ sim or digi' to each input file path
     input_files = [f"{base_directory}/{input_file}" for input_file in args.input_files]
 
     # Use multiprocessing to parallelize task execution
     with multiprocessing.Pool(args.ncpu) as pool:
-        pool.starmap(run_marlin, [(input_file, args.bib, args.reco, args.output_directory) for input_file in input_files])
+        pool.starmap(run_marlin, [(input_file, args.bib, args.reco, output_directory) for input_file in input_files])

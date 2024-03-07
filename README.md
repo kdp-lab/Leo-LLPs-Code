@@ -25,7 +25,7 @@ If you want to change the number of events to run over, go into `codes/functions
    ```
    Replace input_files with as many input files as you want in the form mass_lifetime.hepmc
 
-   If -o is not specified, the default output directory is ../sim_Hbb
+   If -o is not specified, the default output directory is '/local/d1/mu+mu-/sim'
    
    If -j is not specified, the default is 2 cores
    
@@ -37,12 +37,13 @@ If you want to change the number of events to run over, go into `codes/functions
 ## Instructions for running multi_digi_reco.py:
 
 ### Steps:
+(NB: You can be in any directory)
 1. Run
     ```bash
     singularity run --nv --bind /cvmfs,/local /local/d1/badea/mu+mu-/mucoll-deploy.sif
     source /opt/setup_mucoll.sh
     ```
-2. Edit lines 53-58 to prepend the filepaths for whatever directories your files are in
+2. Make sure your input files are in '/local/d1/mu+mu-/...' sim, digi, digi_bib for whichever process you're running
 3. Run the following command:
 
    ```bash
@@ -54,7 +55,7 @@ If you want to change the number of events to run over, go into `codes/functions
 
    If -b is not included, the default is false
 
-   If -o is not specified, the default output directory is None
+   If -o is not specified, the default output directory is '/local/d1/mu+mu/digi' for digi, '/local/d1/mu+mu-/digi_bib' for digi with bib, '/local/d1/mu+mu-/reco' for reco, and '/local/d1/mu+mu-/reco_bib' for reco with bib.
    
    If -j is not specified, the default is 1 cores
    
