@@ -35,7 +35,7 @@ def run_marlin(input_file, bib, reco, output_directory):
         "--DD4hep.DD4hepXMLFile="+os.getenv("MUCOLL_GEO"),
         "--LCIOWriter_all.LCIOOutputFile="+output_file_all,
         "--LCIOWriter_light.LCIOOutputFile="+output_file_light
-        ,"--global.MaxRecordNumber=545"
+        # ,"--global.MaxRecordNumber=545"
     ]
     if bib:
         command += ["--Config.Overlay=Test"]
