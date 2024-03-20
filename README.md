@@ -6,6 +6,9 @@ This repository contains code for running multi-processing over sim, digi, and r
 ### Prerequisites:
 - Clone both [`MuC-tutorial`](https://github.com/MuonColliderSoft/MuC-Tutorial) and [`mucoll-benchmarks`](https://github.com/MuonColliderSoft/mucoll-benchmarks/tree/main) into this directory
 
+### Tips:
+- If you're running over sim or digi_bib/reco_bib over many events, use `nohup` or `screen` to create a process that is separate from your connection to the server so that it can keep running in the background
+
 ## Instructions for running multi_sim.py:
 
 If you want to change the number of events to run over, go into `codes/functions.py`, scroll down to `run_ddsim` function, and edit `--numberOfEvents`
@@ -17,8 +20,7 @@ If you want to change the number of events to run over, go into `codes/functions
     source /opt/setup_mucoll.sh
     ```
 2. Make sure your samples are in `/local/d1/mu+mu-/samples` in the form mass_lifetime.hepmc (mass in GeV, lifetime in ns)
-3. Navigate to the `sim_Hbb` directory
-4. Run the following command:
+3. Run the following command:
 
    ```bash
    python multi_sim.py input_files -o output_directory -j number_of_cores
