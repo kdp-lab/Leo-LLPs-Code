@@ -12,76 +12,13 @@ import numpy as np
 ROOT.gROOT.SetBatch()
 
 # Set up some options
-max_events = -1
+max_events = -1 # Set to -1 to run over all events
 
 # Gather input files
 # Note: these are using the path convention from the singularity command in the MuCol tutorial (see README)
-fnames = glob.glob("/local/d1/lrozanov/mucoll-tutorial-2023/reco_Hbb/run_14_reco.slcio") 
+# fnames = glob.glob("/local/d1/lrozanov/mucoll-tutorial-2023/reco_Hbb_bib/134_0.1_reco_bib.slcio") 
+fnames = glob.glob("/local/d1/mu+mu-/reco_bib/134_0.1_reco_bib.slcio") 
 print("Found %i files."%len(fnames))
-
-# ############## CREATE EMPTY HISTOGRAM OBJECTS  #############################
-# Set up histograms
-# This is an algorithmic way of making a bunch of histograms and storing them in a dictionary
-variables = {}
-variables["pt"] =  {"nbins": 20, "xmin": 0, "xmax": 200}
-variables["eta"] = {"nbins": 50, "xmin": -5, "xmax": 5}
-variables["phi"] = {"nbins": 20, "xmin": -3.5, "xmax": 3.5}
-variables["n"] = {"nbins": 20, "xmin": 0, "xmax": 20}
-hists = {}
-for obj in ["pfo", "pfo_mu", "mcp", "mcp_mu", "mcp_mu_match"]:
-    for var in variables:
-        hists[obj+"_"+var] = ROOT.TH1F(obj+"_"+var, obj+"_"+var, variables[var]["nbins"], variables[var]["xmin"], variables[var]["xmax"])
-
-# Adding histograms for D0 and Z0 resolutions
-variables1 = {}
-variables1["d0_res"] = {"nbins": 100, "xmin": -0.1, "xmax": 0.1}
-variables1["z0_res"] = {"nbins": 100, "xmin": -0.1, "xmax": 0.1}
-for var in ["d0_res", "z0_res"]:
-    hists[var] = ROOT.TH1F(var, var, variables1[var]["nbins"], variables1[var]["xmin"], variables1[var]["xmax"])
-
-# Adding histograms for pT resolution, reconstructed hit counts
-variables1["nhits"] = {"nbins": 50, "xmin": 0, "xmax": 50}
-variables1["pt_res_hits"] = {"nbins": 100, "xmin": -0.5, "xmax": 0.5}
-for var in ["nhits", "pt_res_hits"]:
-    hists[var] = ROOT.TH1F(var, var, variables1[var]["nbins"], variables1[var]["xmin"], variables1[var]["xmax"])
-
-# Adding 2D histograms
-hists_2d = {}
-variables_2d = {
-    "d0_res_vs_pt": {"xbins": 100, "xmin": 0, "xmax": 2000, "ybins": 100, "ymin": -0.1, "ymax": 0.1,
-                    "ylabel": "D0 Resolution", "xlabel": "pT"},
-    "d0_res_vs_eta": {"xbins": 100, "xmin": -3, "xmax": 3, "ybins": 100, "ymin": -0.1, "ymax": 0.1,
-                    "ylabel": "D0 Resolution", "xlabel": "Eta"},
-    "z0_res_vs_pt": {"xbins": 100, "xmin": 0, "xmax": 2000, "ybins": 100, "ymin": -0.1, "ymax": 0.1,
-                    "ylabel": "Z0 Resolution", "xlabel": "pT"},
-    "z0_res_vs_eta": {"xbins": 100, "xmin": -3, "xmax": 3, "ybins": 100, "ymin": -0.1, "ymax": 0.1,
-                    "ylabel": "Z0 Resolution", "xlabel": "Eta"},
-    "pt_res_vs_eta": {"xbins": 100, "xmin": -3, "xmax": 3, "ybins": 100, "ymin": -0.5, "ymax": 0.5,
-                    "ylabel": "pT Resolution", "xlabel": "Eta"},
-    "pt_res_vs_pt": {"xbins": 100, "xmin": 0, "xmax": 2000, "ybins": 100, "ymin": -0.5, "ymax": 0.5,
-                    "ylabel": "pT Resolution", "xlabel": "pT"},
-}
-
-for var in variables_2d:
-    hists_2d[var] = ROOT.TH2F(var, var, variables_2d[var]["xbins"], variables_2d[var]["xmin"],
-                              variables_2d[var]["xmax"], variables_2d[var]["ybins"], variables_2d[var]["ymin"],
-                              variables_2d[var]["ymax"])
-
-
-# Making a separate set of binning conventions for plots showing resolutions
-# these plots will all be filled with the difference between a pfo and a mcp object value
-dvariables = {}
-dvariables["dpt"] =     {"nbins": 100, "xmin": -500, "xmax": 500}
-dvariables["drelpt"] =  {"nbins": 100, "xmin": -0.5, "xmax": 0.5}
-dvariables["dphi"] =    {"nbins": 100, "xmin": -0.001, "xmax": 0.001}
-dvariables["deta"] =    {"nbins": 100, "xmin": -0.001, "xmax": 0.001}
-for obj in ["d_mu"]:
-    for var in dvariables:
-        hists[obj+"_"+var] = ROOT.TH1F(obj+"_"+var, obj+"_"+var, dvariables[var]["nbins"], dvariables[var]["xmin"], dvariables[var]["xmax"])
-
-# Finally making one 2D histogram non-algorithmically; this is what I'll use for a
-# pT resolution vs. pT plot.
-h_2d_relpt = ROOT.TH2F("h_2d_relpt", "h_2d_relpt", 20, 0, 1000, 500, -0.5, 0.5)
 
 def check_hard_radiation(mcp, fractional_threshold):
     had_hard_rad = False
@@ -98,32 +35,19 @@ mcp_phi = []
 mcp_eta = []
 pdgid = []
 status = []
+prod_vertex = []
+prod_time = []
+id = []
 
-pfo_pt = [] #pfo = Particle FLow Object (reconstructed)
-pfo_phi = []
-pfo_eta = []
-pfo_mu_pt = []
-pfo_mu_phi = []
-pfo_mu_eta = []
-
-mcp_mu_pt = [] #mcp_mu = MCParticle muon
-mcp_mu_phi = []
-mcp_mu_eta = []
-
-mcp_mu_match_pt = [] #mcp_mu_match = MCParticle muon that was matched to a PFO muon
-mcp_mu_match_phi = []
-mcp_mu_match_eta = []
-
-d_mu_dpt = [] #d_mu = difference between PFO muon and MCParticle muon
-d_mu_drelpt = []
-d_mu_dphi = []
-d_mu_deta = []
+mcp_stau_pt = [] #mcp_stau = MCParticle stau
+mcp_stau_phi = []
+mcp_stau_eta = []
 
 # TRACK
 d0_res = [] #d0_res = d0 resolution
-d0_res_match = [] #d0_res_match = d0 resolution for matched muons
+d0_res_match = [] #d0_res_match = d0 resolution for matched staus?
 z0_res = [] #z0_res = z0 resolution
-z0_res_match = [] #z0_res_match = z0 resolution for matched muons
+z0_res_match = [] #z0_res_match = z0 resolution for matched staus?
 
 nhits = []
 pixel_nhits = []
@@ -161,15 +85,24 @@ hit_layer = []
 hit_detector = []
 hit_side = []
 
-h2d_relpt = [] #pfo muon pt resolution vs pt
+sim_VB_x, sim_VB_y, sim_VB_z, sim_VB_time, sim_VB_pdg, sim_VB_mcpid, sim_VB_layer = [], [], [], [], [], [], []
+sim_VE_x, sim_VE_y, sim_VE_z, sim_VE_time, sim_VE_pdg, sim_VE_mcpid, sim_VE_layer = [], [], [], [], [], [], []
+sim_IB_x, sim_IB_y, sim_IB_z, sim_IB_time, sim_IB_pdg, sim_IB_mcpid, sim_IB_layer = [], [], [], [], [], [], []
+sim_IE_x, sim_IE_y, sim_IE_z, sim_IE_time, sim_IE_pdg, sim_IE_mcpid, sim_IE_layer = [], [], [], [], [], [], []
+sim_OB_x, sim_OB_y, sim_OB_z, sim_OB_time, sim_OB_pdg, sim_OB_mcpid, sim_OB_layer = [], [], [], [], [], [], []
+sim_OE_x, sim_OE_y, sim_OE_z, sim_OE_time, sim_OE_pdg, sim_OE_mcpid, sim_OE_layer = [], [], [], [], [], [], []
 
-with open("bad_res.txt", "w") as textfile:
-    pass
-with open("no_inner_hits.txt", "w") as textfile:
-    pass
+reco_VB_x, reco_VB_y, reco_VB_z, reco_VB_time, reco_VB_layer = [], [], [], [], []
+reco_VE_x, reco_VE_y, reco_VE_z, reco_VE_time, reco_VE_layer = [], [], [], [], []
+reco_IB_x, reco_IB_y, reco_IB_z, reco_IB_time, reco_IB_layer = [], [], [], [], []
+reco_IE_x, reco_IE_y, reco_IE_z, reco_IE_time, reco_IE_layer = [], [], [], [], []
+reco_OB_x, reco_OB_y, reco_OB_z, reco_OB_time, reco_OB_layer = [], [], [], [], []
+reco_OE_x, reco_OE_y, reco_OE_z, reco_OE_time, reco_OE_layer = [], [], [], [], []
 
 speedoflight = 299792458/1000000  # mm/ns
 
+# Make counter variables
+n_mcp_stau = 0
 no_inner_hits = 0
 i = 0
 num_matched_tracks = 0
@@ -182,26 +115,15 @@ total_n_pfo_mu = 0
 # ############## LOOP OVER EVENTS AND FILL HISTOGRAMS  #############################
 # Loop over events
 for f in fnames:
-    if f == "/data/fmeloni/DataMuC_MuColl10_v0A/reco/merged/muonGun_pT_1000_5000.slcio":
-        continue
     if max_events > 0 and i >= max_events: break
-    #if no_inner_hits > np.abs(max_events): break
-    # if f != "/data/fmeloni/DataMuC_MuColl10_v0A/reco/merged/muonGun_pT_250_1000.slcio":
-    #     print("Skipped")
-    #     continue
     reader = pyLCIO.IOIMPL.LCFactory.getInstance().createLCReader()
     reader.open(f)
     for ievt,event in enumerate(reader): 
         if max_events > 0 and i >= max_events: break
-        #if no_inner_hits > np.abs(max_events): break
         if i%10 == 0: print("Processing event %i."%i)
 
         # Get the collections we care about
-        # relationCollection = event.getCollection('MCParticle_SiTracks')
-        # relation = pyLCIO.UTIL.LCRelationNavigator(relationCollection)
-
         mcpCollection = event.getCollection("MCParticle")
-        pfoCollection = event.getCollection("PandoraPFOs")
         trackCollection = event.getCollection("SiTracks")
 
         hit_collections = []
@@ -217,12 +139,25 @@ for f in fnames:
         hit_collections.append(VBTrackerHits)
         VETrackerHits = event.getCollection('VXDEndcapHits')
         hit_collections.append(VETrackerHits)
-
-        # Make counter variables
-        n_mcp_mu = 0
-        n_pfo_mu = 0
-        has_pfo_mu = False
-        my_pfo_mu = 0
+        
+        # Relations
+        VBrelationCollection = event.getCollection('VXDBarrelHitsRelations')
+        VBrelation = pyLCIO.UTIL.LCRelationNavigator(VBrelationCollection)
+        
+        VErelationCollection = event.getCollection('VXDEndcapHitsRelations')
+        VErelation = pyLCIO.UTIL.LCRelationNavigator(VErelationCollection)
+        
+        IBrelationCollection = event.getCollection('ITBarrelHitsRelations')
+        IBrelation = pyLCIO.UTIL.LCRelationNavigator(IBrelationCollection)
+        
+        IErelationCollection = event.getCollection('ITEndcapHitsRelations')
+        IErelation = pyLCIO.UTIL.LCRelationNavigator(IErelationCollection)
+        
+        OBrelationCollection = event.getCollection('OTBarrelHitsRelations')
+        OBrelation = pyLCIO.UTIL.LCRelationNavigator(OBrelationCollection)
+        
+        OErelationCollection = event.getCollection('OTEndcapHitsRelations')
+        OErelation = pyLCIO.UTIL.LCRelationNavigator(OErelationCollection)
 
         # MCPs
         imcp_pt = []
@@ -230,14 +165,9 @@ for f in fnames:
         imcp_phi = []
         ipdgid = []
         istatus = []
-
-        # Pfos 
-        ipfo_pt = []
-        ipfo_eta = []
-        ipfo_phi = []
-        ipfo_mu_pt = []
-        ipfo_mu_eta = []
-        ipfo_mu_phi = []
+        iprod_vertex = []
+        iprod_time = []
+        iid = []
 
         # Tracks
         id0_res_vs_pt = []
@@ -272,32 +202,70 @@ for f in fnames:
         ihit_layer = []
         ihit_detector = []
         ihit_side = []
+        
+        # Sim Hits
+        isim_VB_x, isim_VB_y, isim_VB_z, isim_VB_time, isim_VB_pdg, isim_VB_mcpid, isim_VB_layer = [], [], [], [], [], [], []
+        isim_VE_x, isim_VE_y, isim_VE_z, isim_VE_time, isim_VE_pdg, isim_VE_mcpid, isim_VE_layer = [], [], [], [], [], [], []
+        isim_IB_x, isim_IB_y, isim_IB_z, isim_IB_time, isim_IB_pdg, isim_IB_mcpid, isim_IB_layer = [], [], [], [], [], [], []
+        isim_IE_x, isim_IE_y, isim_IE_z, isim_IE_time, isim_IE_pdg, isim_IE_mcpid, isim_IE_layer = [], [], [], [], [], [], []
+        isim_OB_x, isim_OB_y, isim_OB_z, isim_OB_time, isim_OB_pdg, isim_OB_mcpid, isim_OB_layer = [], [], [], [], [], [], []
+        isim_OE_x, isim_OE_y, isim_OE_z, isim_OE_time, isim_OE_pdg, isim_OE_mcpid, isim_OE_layer = [], [], [], [], [], [], []
 
+        ireco_VB_x, ireco_VB_y, ireco_VB_z, ireco_VB_time, ireco_VB_layer = [], [], [], [], []
+        ireco_VE_x, ireco_VE_y, ireco_VE_z, ireco_VE_time, ireco_VE_layer = [], [], [], [], []
+        ireco_IB_x, ireco_IB_y, ireco_IB_z, ireco_IB_time, ireco_IB_layer = [], [], [], [], []
+        ireco_IE_x, ireco_IE_y, ireco_IE_z, ireco_IE_time, ireco_IE_layer = [], [], [], [], []
+        ireco_OB_x, ireco_OB_y, ireco_OB_z, ireco_OB_time, ireco_OB_layer = [], [], [], [], []
+        ireco_OE_x, ireco_OE_y, ireco_OE_z, ireco_OE_time, ireco_OE_layer = [], [], [], [], []
 
-        # Loop over the reconstructed objects and fill histograms
-        for pfo in pfoCollection:
-            pfo_p = pfo.getMomentum()
-            pfo_tlv = ROOT.TLorentzVector()
-            pfo_tlv.SetPxPyPzE(pfo_p[0], pfo_p[1], pfo_p[2], pfo.getEnergy())
-            hists["pfo_pt"].Fill(pfo_tlv.Perp())
-            hists["pfo_eta"].Fill(pfo_tlv.Eta())
-            hists["pfo_phi"].Fill(pfo_tlv.Phi())
+        for coll_name, relation, (ix, iy, iz, itime, ipdg, imcpid, ilayer), (irel_x, irel_y, irel_z, irel_time, irel_layer) in [
+            ("VertexBarrelCollection", VBrelation, (isim_VB_x, isim_VB_y, isim_VB_z, isim_VB_time, isim_VB_pdg, isim_VB_mcpid, isim_VB_layer), (ireco_VB_x, ireco_VB_y, ireco_VB_z, ireco_VB_time, ireco_VB_layer)),
+            ("VertexEndcapCollection", VErelation, (isim_VE_x, isim_VE_y, isim_VE_z, isim_VE_time, isim_VE_pdg, isim_VE_mcpid, isim_VE_layer), (ireco_VE_x, ireco_VE_y, ireco_VE_z, ireco_VE_time, ireco_VE_layer)),
+            ("InnerTrackerBarrelCollection", IBrelation, (isim_IB_x, isim_IB_y, isim_IB_z, isim_IB_time, isim_IB_pdg, isim_IB_mcpid, isim_IB_layer), (ireco_IB_x, ireco_IB_y, ireco_IB_z, ireco_IB_time, ireco_IB_layer)),
+            ("InnerTrackerEndcapCollection", IErelation, (isim_IE_x, isim_IE_y, isim_IE_z, isim_IE_time, isim_IE_pdg, isim_IE_mcpid, isim_IE_layer), (ireco_IE_x, ireco_IE_y, ireco_IE_z, ireco_IE_time, ireco_IE_layer)),
+            ("OuterTrackerBarrelCollection", OBrelation, (isim_OB_x, isim_OB_y, isim_OB_z, isim_OB_time, isim_OB_pdg, isim_OB_mcpid, isim_OB_layer), (ireco_OB_x, ireco_OB_y, ireco_OB_z, ireco_OB_time, ireco_OB_layer)),
+            ("OuterTrackerEndcapCollection", OErelation, (isim_OE_x, isim_OE_y, isim_OE_z, isim_OE_time, isim_OE_pdg, isim_OE_mcpid, isim_OE_layer), (ireco_OE_x, ireco_OE_y, ireco_OE_z, ireco_OE_time, ireco_OE_layer))
+        ]:
+            try:
+                collection = event.getCollection(coll_name)
+                for hit in collection:
+                    # print("hit",collection.getTypeName(), collection.getParameters())
+                    position = hit.getPosition()
+                    ix.append(position[0])
+                    iy.append(position[1])
+                    iz.append(position[2])
+                    itime.append(hit.getTime())
 
-            ipfo_pt.append(pfo_tlv.Perp())
-            ipfo_eta.append(pfo_tlv.Eta())
-            ipfo_phi.append(pfo_tlv.Phi())
-
-            if abs(pfo.getType())==13:
-                hists["pfo_mu_pt"].Fill(pfo_tlv.Perp())
-                hists["pfo_mu_eta"].Fill(pfo_tlv.Eta())
-                hists["pfo_mu_phi"].Fill(pfo_tlv.Phi())
-
-                ipfo_mu_pt.append(pfo_tlv.Perp())
-                ipfo_mu_eta.append(pfo_tlv.Eta())
-                ipfo_mu_phi.append(pfo_tlv.Phi())
-                n_pfo_mu += 1
-                has_pfo_mu = True
-                my_pfo_mu = pfo_tlv     # Storing this to use for matching in the next loop
+                    # Retrieve the MCParticle and its PDG code
+                    mcp = hit.getMCParticle()
+                    hit_pdg = mcp.getPDG() if mcp else None
+                    mcpid = mcp.id() if mcp else None
+                    ipdg.append(hit_pdg)
+                    imcpid.append(mcpid)
+                    
+                    # Get layer
+                    encoding = collection.getParameters().getStringVal(pyLCIO.EVENT.LCIO.CellIDEncoding)
+                    decoder = pyLCIO.UTIL.BitField64(encoding)
+                    cellID = int(hit.getCellID0())
+                    decoder.setValue(cellID)
+                    detector = decoder["system"].value()
+                    layer = decoder['layer'].value()
+                    side = decoder["side"].value()
+                    
+                    ilayer.append(layer)
+                    
+                    recohit = relation.getRelatedFromObjects(hit)
+                    if len(recohit) > 0:
+                        recohit = recohit[0]
+                        rel_position = recohit.getPosition()
+                        irel_x.append(rel_position[0])
+                        irel_y.append(rel_position[1])
+                        irel_z.append(rel_position[2])
+                        irel_time.append(recohit.getTime())
+                        irel_layer.append(layer)
+                        
+            except Exception as e:
+                print(f"Error accessing {coll_name}: {e}")   # Storing this to use for matching in the next loop
 
         # Loop over the truth objects and fill histograms
         for mcp in mcpCollection:
@@ -305,66 +273,28 @@ for f in fnames:
             mcp_tlv = ROOT.TLorentzVector()
             mcp_tlv.SetPxPyPzE(mcp_p[0], mcp_p[1], mcp_p[2], mcp.getEnergy())
             pdg = mcp.getPDG()
-            hists["mcp_pt"].Fill(mcp_tlv.Perp())
-            hists["mcp_eta"].Fill(mcp_tlv.Eta())
-            hists["mcp_phi"].Fill(mcp_tlv.Phi())
 
             imcp_pt.append(mcp_tlv.Perp())
             imcp_eta.append(mcp_tlv.Eta())
             imcp_phi.append(mcp_tlv.Phi())
             ipdgid.append(pdg)
             istatus.append(mcp.getGeneratorStatus())
+            iprod_vertex.append([mcp.getVertex()[i] for i in range(3)])
+            iprod_time.append(mcp.getTime())
+            iid.append(mcp.id())
             # print("PID, Status, pT, eta, phi: ", pdg, mcp.getGeneratorStatus(), mcp_tlv.Perp(), mcp_tlv.Eta(), mcp_tlv.Phi())
 
-            if abs(mcp.getPDG())==13 and mcp.getGeneratorStatus()==1:
+            if abs(mcp.getPDG())==1000015 or abs(mcp.getPDG())==2000015:
 
-                hists["mcp_mu_pt"].Fill(mcp_tlv.Perp())
-                hists["mcp_mu_eta"].Fill(mcp_tlv.Eta())
-                hists["mcp_mu_phi"].Fill(mcp_tlv.Phi())
+                imcp_stau_pt = []
+                imcp_stau_eta = []
+                imcp_stau_phi = []
 
-                imcp_mu_pt = []
-                imcp_mu_eta = []
-                imcp_mu_phi = []
-
-                imcp_mu_pt.append(mcp_tlv.Perp())
-                imcp_mu_eta.append(mcp_tlv.Eta())
-                imcp_mu_phi.append(mcp_tlv.Phi())
-                n_mcp_mu += 1
+                imcp_stau_pt.append(mcp_tlv.Perp())
+                imcp_stau_eta.append(mcp_tlv.Eta())
+                imcp_stau_phi.append(mcp_tlv.Phi())
+                n_mcp_stau += 1
                 # print("Truth pt, eta, phi:", mcp_tlv.Perp(), mcp_tlv.Eta(), mcp_tlv.Phi())
-                                                
-                # For events in which a PFO mu was reconstructed, fill histograms that will
-                # be used for efficiency. Both numerator and denominator must be filled with truth values!
-                # Also fill resolution histograms
-                if has_pfo_mu:
-                    hists["mcp_mu_match_pt"].Fill(mcp_tlv.Perp())
-                    hists["mcp_mu_match_eta"].Fill(mcp_tlv.Eta())
-                    hists["mcp_mu_match_phi"].Fill(mcp_tlv.Phi())
-
-                    imcp_mu_match_pt = []
-                    imcp_mu_match_eta = []
-                    imcp_mu_match_phi = []
-
-                    id_mu_dpt = []
-                    id_mu_drelpt = []
-                    id_mu_deta = []
-                    id_mu_dphi = []
-                    ih2d_relpt = []
-
-                    imcp_mu_match_pt.append(mcp_tlv.Perp())
-                    imcp_mu_match_eta.append(mcp_tlv.Eta())
-                    imcp_mu_match_phi.append(mcp_tlv.Phi())
-
-                    hists["d_mu_dpt"].Fill(my_pfo_mu.Perp() - mcp_tlv.Perp())
-                    hists["d_mu_drelpt"].Fill((my_pfo_mu.Perp() - mcp_tlv.Perp())/mcp_tlv.Perp())
-                    hists["d_mu_deta"].Fill(my_pfo_mu.Eta() - mcp_tlv.Eta())
-                    hists["d_mu_dphi"].Fill(my_pfo_mu.Phi() - mcp_tlv.Phi())
-                    h_2d_relpt.Fill(mcp_tlv.Perp(), (my_pfo_mu.Perp() - mcp_tlv.Perp())/mcp_tlv.Perp())
-
-                    id_mu_dpt.append(my_pfo_mu.Perp() - mcp_tlv.Perp())
-                    id_mu_drelpt.append((my_pfo_mu.Perp() - mcp_tlv.Perp())/mcp_tlv.Perp())
-                    id_mu_deta.append(my_pfo_mu.Eta() - mcp_tlv.Eta())
-                    id_mu_dphi.append(my_pfo_mu.Phi() - mcp_tlv.Phi())
-                    ih2d_relpt.append([mcp_tlv.Perp(), (my_pfo_mu.Perp() - mcp_tlv.Perp())/mcp_tlv.Perp()])
 
         # Loop over the track objects
         for track in trackCollection:
@@ -380,10 +310,6 @@ for f in fnames:
 
             d0 = track.getD0()
             z0 = track.getZ0()
-
-            hists["d0_res"].Fill(d0)
-            hists["z0_res"].Fill(z0)
-            hists["nhits"].Fill(nhitz)
 
             id0_res.append(d0)
             iz0_res.append(z0)
@@ -407,13 +333,6 @@ for f in fnames:
                     #print(particle_pt, pt)
                     ptres = (particle_pt - pt) / particle_pt
                     #print(j, dr)
-                    # Fill 2D histograms
-                    hists_2d["d0_res_vs_pt"].Fill(particle_pt, d0)
-                    hists_2d["d0_res_vs_eta"].Fill(particle_eta, d0)
-                    hists_2d["z0_res_vs_pt"].Fill(particle_pt, z0)
-                    hists_2d["z0_res_vs_eta"].Fill(particle_eta, z0)
-                    hists_2d["pt_res_vs_eta"].Fill(particle_eta, ptres)
-                    hists_2d["pt_res_vs_pt"].Fill(particle_pt, ptres)
                     num_matched_tracks += 1
 
                     id0_res_vs_pt.append([particle_pt, d0])
@@ -427,8 +346,19 @@ for f in fnames:
                     id0_res_match.append(d0)
                     iz0_res_match.append(z0)
                     ipt_res.append(ptres)
-                    #itheta_match.append(mcp_mu_theta[j])
+                    #itheta_match.append(mcp_stau_theta[j])
 
+            # Hit per track
+            iix = []
+            iiy = []
+            iiz = []
+            iihit_pdg = []
+            iitime = []
+            iicorrected_time = []
+            iihit_layer = []
+            iihit_detector = []
+            iihit_side = []
+            
             pixel_nhit = 0
             inner_nhit = 0
             outer_nhit = 0
@@ -467,31 +397,34 @@ for f in fnames:
 
                     corrected_t = hit.getTime()*(1.+ROOT.TRandom3(ievt).Gaus(0., resolution)) - tof
                     
-                    ix.append(pos_x)
-                    iy.append(pos_y)
-                    iz.append(pos_z)
-                    ihit_pdg.append(hit_pdg)
-                    itime.append(hit.getTime())
-                    icorrected_time.append(corrected_t)
-                    ihit_detector.append(detector)
-                    ihit_layer.append(layer)
-                    ihit_side.append(side)
+                    iix.append(pos_x)
+                    iiy.append(pos_y)
+                    iiz.append(pos_z)
+                    iihit_pdg.append(hit_pdg)
+                    iitime.append(hit.getTime())
+                    iicorrected_time.append(corrected_t)
+                    iihit_detector.append(detector)
+                    iihit_layer.append(layer)
+                    iihit_side.append(side)
 
 
             pixel_nhits.append([pixel_nhit])
             inner_nhits.append([inner_nhit])
             outer_nhits.append([outer_nhit])
+            ix.append(iix)
+            iy.append(iiy)
+            iz.append(iiz)
+            ihit_pdg.append(iihit_pdg)
+            itime.append(iitime)
+            icorrected_time.append(iicorrected_time)
+            ihit_detector.append(iihit_detector)
+            ihit_layer.append(iihit_layer)
+            ihit_side.append(iihit_side)
                         
         # print("End of event \n")
         # This is here to check that we never reconstruct multiple muons
         # If we did, we'd have to match the correct muon to the MCP object to do eff/res plots
         # But since we don't, we can skip that step
-        # if n_pfo_mu > 1: print(n_pfo_mu)
-        hists["mcp_n"].Fill(len(mcpCollection))
-        hists["pfo_n"].Fill(len(pfoCollection))
-        hists["mcp_mu_n"].Fill(n_mcp_mu)
-        hists["pfo_mu_n"].Fill(n_pfo_mu)
-        hists["mcp_mu_match_n"].Fill(n_pfo_mu)
         i+=1
         d0_res.append(id0_res)
         z0_res.append(iz0_res)
@@ -530,10 +463,25 @@ for f in fnames:
         mcp_phi.append(imcp_phi)
         pdgid.append(ipdgid)
         status.append(istatus)
-        if n_mcp_mu > 0:
-            mcp_mu_pt.append(imcp_mu_pt)
-            mcp_mu_eta.append(imcp_mu_eta)
-            mcp_mu_phi.append(imcp_mu_phi)
+        prod_vertex.append(iprod_vertex)
+        prod_time.append(iprod_time)
+        id.append(iid)
+        if n_mcp_stau > 0:
+            mcp_stau_pt.append(imcp_stau_pt)
+            mcp_stau_eta.append(imcp_stau_eta)
+            mcp_stau_phi.append(imcp_stau_phi)
+        sim_VB_x.append(isim_VB_x); sim_VB_y.append(isim_VB_y); sim_VB_z.append(isim_VB_z); sim_VB_time.append(isim_VB_time); sim_VB_pdg.append(isim_VB_pdg); sim_VB_mcpid.append(isim_VB_mcpid); sim_VB_layer.append(isim_VB_layer)
+        sim_VE_x.append(isim_VE_x); sim_VE_y.append(isim_VE_y); sim_VE_z.append(isim_VE_z); sim_VE_time.append(isim_VE_time); sim_VE_pdg.append(isim_VE_pdg); sim_VE_mcpid.append(isim_VE_mcpid); sim_VE_layer.append(isim_VE_layer)
+        sim_IB_x.append(isim_IB_x); sim_IB_y.append(isim_IB_y); sim_IB_z.append(isim_IB_z); sim_IB_time.append(isim_IB_time); sim_IB_pdg.append(isim_IB_pdg); sim_IB_mcpid.append(isim_IB_mcpid); sim_IB_layer.append(isim_IB_layer)
+        sim_IE_x.append(isim_IE_x); sim_IE_y.append(isim_IE_y); sim_IE_z.append(isim_IE_z); sim_IE_time.append(isim_IE_time); sim_IE_pdg.append(isim_IE_pdg); sim_IE_mcpid.append(isim_IE_mcpid); sim_IE_layer.append(isim_IE_layer)
+        sim_OB_x.append(isim_OB_x); sim_OB_y.append(isim_OB_y); sim_OB_z.append(isim_OB_z); sim_OB_time.append(isim_OB_time); sim_OB_pdg.append(isim_OB_pdg); sim_OB_mcpid.append(isim_OB_mcpid); sim_OB_layer.append(isim_OB_layer)
+        sim_OE_x.append(isim_OE_x); sim_OE_y.append(isim_OE_y); sim_OE_z.append(isim_OE_z); sim_OE_time.append(isim_OE_time); sim_OE_pdg.append(isim_OE_pdg); sim_OE_mcpid.append(isim_OE_mcpid); sim_OE_layer.append(isim_OE_layer)
+        reco_VB_x.append(ireco_VB_x); reco_VB_y.append(ireco_VB_y); reco_VB_z.append(ireco_VB_z); reco_VB_time.append(ireco_VB_time); reco_VB_layer.append(ireco_VB_layer)
+        reco_VE_x.append(ireco_VE_x); reco_VE_y.append(ireco_VE_y); reco_VE_z.append(ireco_VE_z); reco_VE_time.append(ireco_VE_time); reco_VE_layer.append(ireco_VE_layer)
+        reco_IB_x.append(ireco_IB_x); reco_IB_y.append(ireco_IB_y); reco_IB_z.append(ireco_IB_z); reco_IB_time.append(ireco_IB_time); reco_IB_layer.append(ireco_IB_layer)
+        reco_IE_x.append(ireco_IE_x); reco_IE_y.append(ireco_IE_y); reco_IE_z.append(ireco_IE_z); reco_IE_time.append(ireco_IE_time); reco_IE_layer.append(ireco_IE_layer)
+        reco_OB_x.append(ireco_OB_x); reco_OB_y.append(ireco_OB_y); reco_OB_z.append(ireco_OB_z); reco_OB_time.append(ireco_OB_time); reco_OB_layer.append(ireco_OB_layer)
+        reco_OE_x.append(ireco_OE_x); reco_OE_y.append(ireco_OE_y); reco_OE_z.append(ireco_OE_z); reco_OE_time.append(ireco_OE_time); reco_OE_layer.append(ireco_OE_layer)
        
     reader.close()
 
@@ -541,8 +489,8 @@ for f in fnames:
 print("\nSummary statistics:")
 print("Ran over %i events."%i)
 print("Found:")
-print("\t%i MCPs"%hists["mcp_pt"].GetEntries())
-print("\t%i mu MCPs"%hists["mcp_mu_pt"].GetEntries())
+# print("\t%i MCPs"%len(np.ravel(mcp_pt)))
+print("\t%i Stau MCPs"%n_mcp_stau)
 print("\tSanity check mcpCollection length:", len(imcp_pt))
 print("\tSanity check trackCollection length:", len(itrack_pt))
 # print("\tSanity check # hits:", len(np.ravel(x)))
@@ -552,19 +500,35 @@ print("\tSanity check trackCollection length:", len(itrack_pt))
 # print('\t%i duplicates eliminated'%num_dupes)
 # print('\t%i hard radiations discarded'%hard_rad_discard)
 # print('\t%i fake tracks'%num_fake_tracks)
-# print('\t%i GeV'%np.max(mcp_mu_pt))
+# print('\t%i GeV'%np.max(mcp_stau_pt))
 
 
 # Make a list of all the data you want to save
-data_list = {}
+data_list = {
+    "sim_VB_x": sim_VB_x, "sim_VB_y": sim_VB_y, "sim_VB_z": sim_VB_z, "sim_VB_time": sim_VB_time, "sim_VB_pdg": sim_VB_pdg, "sim_VB_mcpid": sim_VB_mcpid, "sim_VB_layer": sim_VB_layer,
+    "sim_VE_x": sim_VE_x, "sim_VE_y": sim_VE_y, "sim_VE_z": sim_VE_z, "sim_VE_time": sim_VE_time, "sim_VE_pdg": sim_VE_pdg, "sim_VE_mcpid": sim_VE_mcpid, "sim_VE_layer": sim_VE_layer,
+    "sim_IB_x": sim_IB_x, "sim_IB_y": sim_IB_y, "sim_IB_z": sim_IB_z, "sim_IB_time": sim_IB_time, "sim_IB_pdg": sim_IB_pdg, "sim_IB_mcpid": sim_IB_mcpid, "sim_IB_layer": sim_IB_layer,
+    "sim_IE_x": sim_IE_x, "sim_IE_y": sim_IE_y, "sim_IE_z": sim_IE_z, "sim_IE_time": sim_IE_time, "sim_IE_pdg": sim_IE_pdg, "sim_IE_mcpid": sim_IE_mcpid, "sim_IE_layer": sim_IE_layer,
+    "sim_OB_x": sim_OB_x, "sim_OB_y": sim_OB_y, "sim_OB_z": sim_OB_z, "sim_OB_time": sim_OB_time, "sim_OB_pdg": sim_OB_pdg, "sim_OB_mcpid": sim_OB_mcpid, "sim_OB_layer": sim_OB_layer,
+    "sim_OE_x": sim_OE_x, "sim_OE_y": sim_OE_y, "sim_OE_z": sim_OE_z, "sim_OE_time": sim_OE_time, "sim_OE_pdg": sim_OE_pdg, "sim_OE_mcpid": sim_OE_mcpid, "sim_OE_layer": sim_OE_layer,
+    "reco_VB_x": reco_VB_x, "reco_VB_y": reco_VB_y, "reco_VB_z": reco_VB_z, "reco_VB_time": reco_VB_time, "reco_VB_layer": reco_VB_layer,
+    "reco_VE_x": reco_VE_x, "reco_VE_y": reco_VE_y, "reco_VE_z": reco_VE_z, "reco_VE_time": reco_VE_time, "reco_VE_layer": reco_VE_layer,
+    "reco_IB_x": reco_IB_x, "reco_IB_y": reco_IB_y, "reco_IB_z": reco_IB_z, "reco_IB_time": reco_IB_time, "reco_IB_layer": reco_IB_layer,
+    "reco_IE_x": reco_IE_x, "reco_IE_y": reco_IE_y, "reco_IE_z": reco_IE_z, "reco_IE_time": reco_IE_time, "reco_IE_layer": reco_IE_layer,
+    "reco_OB_x": reco_OB_x, "reco_OB_y": reco_OB_y, "reco_OB_z": reco_OB_z, "reco_OB_time": reco_OB_time, "reco_OB_layer": reco_OB_layer,
+    "reco_OE_x": reco_OE_x, "reco_OE_y": reco_OE_y, "reco_OE_z": reco_OE_z, "reco_OE_time": reco_OE_time, "reco_OE_layer": reco_OE_layer
+}
 data_list["mcp_pt"] = mcp_pt
 data_list["mcp_eta"] = mcp_eta
 data_list["mcp_phi"] = mcp_phi
 data_list["pdgid"] = pdgid
 data_list["status"] = status
-data_list["mcp_mu_pt"] = mcp_mu_pt
-data_list["mcp_mu_eta"] = mcp_mu_eta
-data_list["mcp_mu_phi"] = mcp_mu_phi
+data_list["prod_vertex"] = prod_vertex
+data_list["prod_time"] = prod_time
+data_list["id"] = id
+data_list["mcp_stau_pt"] = mcp_stau_pt
+data_list["mcp_stau_eta"] = mcp_stau_eta
+data_list["mcp_stau_phi"] = mcp_stau_phi
 
 data_list["d0_res"] = d0_res
 data_list["z0_res"] = z0_res
@@ -602,66 +566,12 @@ data_list["hit_layer"] = hit_layer
 data_list["hit_detector"] = hit_detector
 data_list["hit_side"] = hit_side
 
-data_list["h_2d_relpt"] = h2d_relpt
-
 # After the loop is finished, save the data_list to a .json file
-output_json = "../reco_Hbb/run_14_reco.json"
+output_json = "../reco_Hbb_bib/134_0.1_reco_bib.json"
 with open(output_json, 'w') as fp:
     json.dump(data_list, fp)
 
-# Draw all the 1D histograms you filled
-for i, h in enumerate(hists):
-    c = ROOT.TCanvas("c%i"%i, "c%i"%i)
-    hists[h].Draw()
-    hists[h].GetXaxis().SetTitle(h)
-    hists[h].GetYaxis().SetTitle("Entries")
 
-    # For resolution plots, fit them and get the mean and sigma
-    if h.startswith("d_mu"):
-        f = ROOT.TF1("f%i"%i, "gaus")
-        f.SetLineColor(ROOT.kRed)
-        hists[h].Fit("f%i"%i)
-        c.SetLogy()
-        latex = ROOT.TLatex()
-        p = f.GetParameters()
-        latex.DrawLatexNDC(.64, .85, "Mean: %f"%p[1])
-        latex.DrawLatexNDC(.64, .78, "Sigma: %f"%p[2])
-    c.SaveAs("plots/%s.png"%h)
-
-# Make efficiency plots
-# In these files, there are at most 1 PFO mu, so matching isn't needed
-for v in variables:
-    if v=="n": continue
-    c = ROOT.TCanvas("c%s"%v, "c%s"%v)
-    eff = ROOT.TEfficiency(hists["mcp_mu_match_"+v], hists["mcp_mu_"+v])
-    eff.Draw("ape")
-    ROOT.gPad.Update()
-    eff.SetLineWidth(2)
-    eff.GetPaintedGraph().SetMinimum(0)
-    eff.GetPaintedGraph().SetMaximum(1)
-    eff.SetTitle(";%s;Efficiency"%v)
-    c.SaveAs("plots/eff_%s.png"%v)
-
-# Make 2D plot and a TProfile to understand pT resolution v pT
-c = ROOT.TCanvas("crelpt2d", "crelpt2d")
-h_2d_relpt.Draw("colz")
-h_2d_relpt.GetXaxis().SetTitle("pt")
-h_2d_relpt.GetYaxis().SetTitle("drelpt")
-c.SaveAs("plots/d_mu_relpt_2d.png")
-
-c = ROOT.TCanvas("crelpt2dprof", "crelpt2dprof")
-h_prof = h_2d_relpt.ProfileX("_pfx", 1, -1, "s")
-h_prof.GetXaxis().SetTitle("pt")
-h_prof.GetYaxis().SetTitle("drelpt")
-h_prof.Draw()
-c.SaveAs("plots/d_mu_relpt_prof.png")
-
-for var in hists_2d:
-    c = ROOT.TCanvas("c_" + var, "c_" + var)
-    hists_2d[var].Draw("colz")
-    hists_2d[var].GetXaxis().SetTitle(variables_2d[var]["xlabel"])
-    hists_2d[var].GetYaxis().SetTitle(variables_2d[var]["ylabel"])
-    c.SaveAs("plots/" + var + ".png")
 
 
 
