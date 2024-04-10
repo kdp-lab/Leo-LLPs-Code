@@ -27,6 +27,7 @@ def run_marlin(input_file, bib, reco, output_directory):
     task_suffix = "reco" if reco else "digi"
     output_file_all = os.path.join(output_directory, f"{input_filename}_{task_suffix}{bib_suffix}.slcio")
     output_file_light = os.path.join(output_directory, f"{input_filename}_{task_suffix}{bib_suffix}_light.slcio")
+    output_file_root = os.path.join(output_directory, f"{input_filename}_{task_suffix}{bib_suffix}")
 
     command = [
         "Marlin",
@@ -34,7 +35,8 @@ def run_marlin(input_file, bib, reco, output_directory):
         "--global.LCIOInputFiles="+input_file,
         "--DD4hep.DD4hepXMLFile="+os.getenv("MUCOLL_GEO"),
         "--LCIOWriter_all.LCIOOutputFile="+output_file_all,
-        "--LCIOWriter_light.LCIOOutputFile="+output_file_light
+        "--LCIOWriter_light.LCIOOutputFile="+output_file_light,
+        "--AIDA.FileName="+output_file_root,
         # ,"--global.MaxRecordNumber=545"
     ]
     if bib:
