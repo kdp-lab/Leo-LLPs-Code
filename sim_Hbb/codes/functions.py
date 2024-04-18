@@ -88,6 +88,9 @@ def generate_modified_tbl(mass, lifetime, width):
 def run_ddsim(input_file, output_directory, tbl_file):
     # Extracting the filename without extension
     input_filename = os.path.splitext(os.path.basename(input_file))[0]
+    if f"{input_filename}_sim.slcio" in os.listdir(output_directory):
+        print(f"Overriding existing file: {input_filename}_sim.slcio")
+        subprocess.run(["rm", f"{output_directory}/{input_filename}_sim.slcio", "-f"])
     # DDSIM command
     command = [
         "ddsim",
@@ -96,7 +99,7 @@ def run_ddsim(input_file, output_directory, tbl_file):
         "--inputFile",
         input_file,
         "--numberOfEvents",
-        "1000",
+        "5",
         "--physics.pdgfile",
         f"{tbl_file}",
         "--outputFile",
