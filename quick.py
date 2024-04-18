@@ -13,12 +13,12 @@ for ievt, event in enumerate(reader):
         z = vertex[2]
         id = mcp.id()
         if abs(mcp.getPDG())==15:
-            print("\tTau Parent - unique id, PDG:", [(x.id(), x.getPDG()) for x in mcp.getParents()] if mcp.getParents() else None, "Tau vertex:", [r_xy,z])
+            print("\tTau Parent - unique id, PDG:", [(x.id(), x.getPDG()) for x in mcp.getParents()] if mcp.getParents() else None, "Tau vertex, status:", [r_xy,z], mcp.getGeneratorStatus())
         endp = mcp.getEndpoint()
         r_xy = np.sqrt(endp[0]**2 + endp[1]**2)
         z = endp[2]
         if abs(mcp.getPDG())==1000015 or abs(mcp.getPDG())==2000015:
-            print("\tStau - unique id, endpoint:", id, [r_xy,z])
+            print("\tStau - unique id, status, endpoint:", id, mcp.getGeneratorStatus(), [r_xy,z])
                      
     
     for coll_name, (sim_x, sim_y, sim_z, sim_time, sim_pdg, sim_mcpid, sim_layer), (reco_x, reco_y, reco_z, reco_time, reco_layer) in [
