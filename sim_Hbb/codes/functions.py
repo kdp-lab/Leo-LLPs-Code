@@ -84,8 +84,7 @@ def generate_modified_tbl(mass, lifetime, width):
 
     return output_tbl_file
 
-
-def run_ddsim(input_file, output_directory, tbl_file):
+def run_ddsim(input_file, output_directory, tbl_file, number_of_events):
     # Extracting the filename without extension
     input_filename = os.path.splitext(os.path.basename(input_file))[0]
     if f"{input_filename}_sim.slcio" in os.listdir(output_directory):
@@ -98,11 +97,13 @@ def run_ddsim(input_file, output_directory, tbl_file):
         "/local/d1/lrozanov/mucoll-tutorial-2023/mucoll-benchmarks/simulation/ilcsoft/steer_baseline.py",
         "--inputFile",
         input_file,
-        "--numberOfEvents",
-        "5",
         "--physics.pdgfile",
         f"{tbl_file}",
         "--outputFile",
-        f"{output_directory}/{input_filename}_sim.slcio"  
+        f"{output_directory}/{input_filename}_sim.slcio"
+        # ,"--dumpParameter", "--dump" # Uncomment to print out the parameters in steering file
     ]
+    if number_of_events > 0:
+        command += ["--numberOfEvents", f"{number_of_events}"]
+        
     subprocess.run(command)
