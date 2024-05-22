@@ -2,7 +2,7 @@
 
 This repository contains code for running multi-processing over sim, digi, and reco for studying long-lived particles (LLPs). 
 
-It was necessary for me to rebuild lcgeo and DD4HEP after a new version was released with a fix for [this](https://github.com/AIDASoft/DD4hep/pull/1260) issue - TLDR: Geant4 could not read Hepmc status codes; now the status codes can be specified in the steering file.
+It was necessary for me to rebuild `lcgeo` and `DD4HEP` after a new version was released with a fix for [this](https://github.com/AIDASoft/DD4hep/pull/1260) issue - TLDR: Geant4 could not read Hepmc status codes; now the status codes can be specified in the steering file.
 
 When building `lcgeo` it was necessary to replace all `dd4hep::long64` with `long long int`.
 
@@ -35,7 +35,7 @@ source /local/d1/lrozanov/mucoll-tutorial-2023/lcgeo/bin/thislcgeo.sh
 
    You can use `-n` or `--number_of_events` to specify the number of events to simulate. The default is all events
 
-   If `-o` is not specified, the default output directory is '/local/d1/mu+mu-/sim'
+   If `-o` is not specified, the default output directory is `/local/d1/mu+mu-/sim`
    
    If `-j` is not specified, the default is 2 cores
    
@@ -48,7 +48,7 @@ source /local/d1/lrozanov/mucoll-tutorial-2023/lcgeo/bin/thislcgeo.sh
 
 ### Steps:
 (NB: You can be in any directory)
-1. Make sure your input files are in '/local/d1/mu+mu-/...' sim, digi, digi_bib for whichever process you're running
+1. Make sure your input files are in `/local/d1/mu+mu-/...` `sim`, `digi`, `digi_bib` for whichever process you're running
 2. Run the following command:
 
    ```bash
@@ -60,9 +60,9 @@ source /local/d1/lrozanov/mucoll-tutorial-2023/lcgeo/bin/thislcgeo.sh
 
    If `-b` is not included, the default is false
 
-   If `-o` is not specified, the default output directory is '/local/d1/mu+mu/digi' for digi, '/local/d1/mu+mu-/digi_bib' for digi with bib, '/local/d1/mu+mu-/reco' for reco, and '/local/d1/mu+mu-/reco_bib' for reco with bib.
+   If `-o` is not specified, the default output directory is `/local/d1/mu+mu/digi` for digi, `/local/d1/mu+mu-/digi_bib` for digi with bib, `/local/d1/mu+mu-/reco` for reco, and `/local/d1/mu+mu-/reco_bib` for reco with bib.
    
-   If `-j` is not specified, the default is 1 cores
+   If `-j` is not specified, the default is 1 core
    
    Example command for digi w/ bib overlaid:
    ```bash
