@@ -20,7 +20,9 @@ source /local/d1/lrozanov/mucoll-tutorial-2023/lcgeo/bin/thislcgeo.sh
 ```
 
 ### Tips:
-- If you're running over sim or digi_bib/reco_bib over many events, use `nohup` or `screen` to create a process that is separate from your connection to the server so that it can keep running in the background.
+- If you're running over sim or digi_bib/reco_bib over many events, use `nohup` or `screen` to create a process that is separate from your connection to the server so that it can keep running in the background. 
+
+E.g. `nohup my_python_script.py > output.log 2>&1 &`
 
 ## Instructions for running multi_sim.py:
 
