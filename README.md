@@ -10,13 +10,19 @@ When building `lcgeo` it was necessary to replace all `dd4hep::long64` with `lon
 ### Prerequisites:
 - Clone both [`MuC-tutorial`](https://github.com/MuonColliderSoft/MuC-Tutorial) and [`mucoll-benchmarks`](https://github.com/MuonColliderSoft/mucoll-benchmarks/tree/main) into this directory.
 
-Run the following commands:
+Run the following commands for sim (but cannot yet run digi/reco over the output):
 
 ```bash
-source /cvmfs/muoncollider.cern.ch/release/2.8-patch2/setup.sh
 source /local/d1/lrozanov/mucoll-tutorial-2023/new_setup.sh
 source /local/d1/lrozanov/mucoll-tutorial-2023/DD4hep/bin/thisdd4hep.sh
 source /local/d1/lrozanov/mucoll-tutorial-2023/lcgeo/bin/thislcgeo.sh
+```
+
+And the following commands for digi/reco (does not work for above output, only old sim files):
+
+```bash
+singularity run --nv --bind /cvmfs,/local /local/d1/badea/mu+mu-/mucoll-deploy.sif
+source /opt/setup_mucoll.sh
 ```
 
 ### Tips:
@@ -24,7 +30,8 @@ source /local/d1/lrozanov/mucoll-tutorial-2023/lcgeo/bin/thislcgeo.sh
 
 E.g. `nohup my_python_script.py > output.log 2>&1 &`
 
-## Instructions for running multi_sim.py:
+##
+ Instructions for running multi_sim.py:
 
 ### Steps:
 1. Make sure your samples are in `/local/d1/mu+mu-/samples` in the form mass_lifetime.hepmc (mass in GeV, lifetime in ns)
