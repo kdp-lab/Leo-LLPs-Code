@@ -10,15 +10,15 @@ When building `lcgeo` it was necessary to replace all `dd4hep::long64` with `lon
 ### Prerequisites:
 - Clone both [`MuC-tutorial`](https://github.com/MuonColliderSoft/MuC-Tutorial) and [`mucoll-benchmarks`](https://github.com/MuonColliderSoft/mucoll-benchmarks/tree/main) into this directory.
 
-Run the following commands for sim (but cannot yet run digi/reco over the output):
+Run the following commands for sim:
 
 ```bash
-source /local/d1/lrozanov/mucoll-tutorial-2023/new_setup.sh
-source /local/d1/lrozanov/mucoll-tutorial-2023/DD4hep/bin/thisdd4hep.sh
-source /local/d1/lrozanov/mucoll-tutorial-2023/lcgeo/bin/thislcgeo.sh
+source /local/d1/brosser/setup.sh
+source /local/d1/brosser/DD4hep/bin/thisdd4hep.sh
+source /local/d1/brosser/lcgeo/bin/thislcgeo.sh
 ```
 
-And the following commands for digi/reco (does not work for above output, only old sim files):
+And the following commands for digi/reco:
 
 ```bash
 singularity run --nv --bind /cvmfs,/local /local/d1/badea/mu+mu-/mucoll-deploy.sif
