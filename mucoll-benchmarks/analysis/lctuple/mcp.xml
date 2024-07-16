@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="us-ascii"?>
+
+<marlin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://ilcsoft.desy.de/marlin/marlin.xsd">
+  
+  <!-- ======================================================= -->
+  <!-- == Marlin processors to be executed                  == -->
+  <!-- ======================================================= -->
+
+  <execute>
+
+    <processor name="AIDA"/> 
+    <processor name="EventNumber" />
+    <processor name="LCTuple" />
+    
+  </execute>
+
+
+  <!-- ======================================================= -->
+  <!-- == Input configuration                               == -->
+  <!-- ======================================================= -->
+
+  <global>
+    <parameter name="LCIOInputFiles"> 
+      input.slcio 
+    </parameter>
+    <parameter name="MaxRecordNumber" value="-1" />
+    <parameter name="SkipNEvents" value="0" />
+    <parameter name="SupressCheck" value="false" />
+    <parameter name="Verbosity"	options="DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT"> MESSAGE  </parameter>
+  </global>
+
+
+  <!-- ======================================================= -->
+  <!-- == Output ROOT file configuration                    == -->
+  <!-- ======================================================= -->
+  <processor name="AIDA" type="AIDAProcessor">
+    <!-- Processor that handles AIDA files. Creates one directory per processor.    -->
+    <!-- Processors only need to create and fill the histograms, clouds and tuples. -->
+    <!-- Needs to be the first ActiveProcessor.                                     -->
+    <!-- compression of output file 0: false >0: true (default) -->
+    <parameter name="Compress" type="int" value="1"/>
+    <!-- filename without extension -->
+    <parameter name="FileName" type="string" value="lctuple_mcp"/>
+    <!-- type of output file xml (default) or root ( only OpenScientist)-->
+    <parameter name="FileType" type="string" value="root "/>
+  </processor>
+
+  
+  <!-- ======================================================= -->
+  <!-- == LCTuple processor configuration                   == -->
+  <!-- ======================================================= -->
+  <processor name="LCTuple" type="LCTuple">
+    <!--LCTuple creates a ROOT TTRee with a column wise ntuple from LCIO collections ....-->
+    <!--Name of the MCParticle collection-->
+    <parameter name="MCParticleCollection" type="string" lcioInType="MCParticle">MCParticle </parameter>
+    <!--verbosity level of this processor ("DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT")-->
+    <parameter name="Verbosity" type="string">MESSAGE </parameter>
+  </processor>
+
+
+  <!-- ======================================================= -->
+  <!-- == Prints event number during processing             == -->
+  <!-- ======================================================= -->
+  <processor name="EventNumber" type="Statusmonitor">
+    <parameter name="HowOften" type="int"> 1 </parameter>
+    <parameter name="Verbosity" type="string"> MESSAGE </parameter>
+  </processor>
+
+</marlin>
