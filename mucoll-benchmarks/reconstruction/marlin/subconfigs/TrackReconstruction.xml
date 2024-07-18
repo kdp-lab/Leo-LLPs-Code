@@ -21,12 +21,14 @@
     15  6
     15 10
     15 14
+
   </parameter>
-  <parameter name="SeedFinding_RMax" type="float">150</parameter>
+  <parameter name="SeedFinding_RMax" type="float">500</parameter>
   <parameter name="SeedFinding_DeltaRMin" type="float">5</parameter>
   <parameter name="SeedFinding_DeltaRMax" type="float">80</parameter>
-  <parameter name="SeedFinding_CollisionRegion" type="float">50</parameter>
+  <parameter name="SeedFinding_CollisionRegion" type="float">150</parameter>
   <parameter name="SeedFinding_RadLengthPerSeed" type="float">0.1</parameter>
+  <parameter name="SeedFinding_ImpactMax" type="float">130</parameter> 
   <parameter name="SeedFinding_SigmaScattering" type="float">50</parameter>
   <parameter name="SeedFinding_MinPt" type="float">500</parameter>
   <!-- CKF Configuration -->
