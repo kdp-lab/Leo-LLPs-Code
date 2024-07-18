@@ -8,7 +8,7 @@ When building `lcgeo` it was necessary to replace all `dd4hep::long64` with `lon
 
 
 ### Prerequisites:
-- Clone both [`MuC-tutorial`](https://github.com/MuonColliderSoft/MuC-Tutorial) into this directory.
+- Clone [`MuC-tutorial`](https://github.com/MuonColliderSoft/MuC-Tutorial) into this directory.
 
 Run the following commands for sim:
 
