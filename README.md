@@ -18,11 +18,10 @@ source /local/d1/brosser/DD4hep/bin/thisdd4hep.sh
 source /local/d1/brosser/lcgeo/bin/thislcgeo.sh
 ```
 
-And the following commands for digi/reco:
+And the following command for digi/reco:
 
 ```bash
-singularity run --nv --bind /cvmfs,/local /local/d1/badea/mu+mu-/mucoll-deploy.sif
-source /opt/setup_mucoll.sh
+source /cvmfs/muoncollider.cern.ch/release/2.8-patch2/setup.sh
 ```
 
 ### Tips:
