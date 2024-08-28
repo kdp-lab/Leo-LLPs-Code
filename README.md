@@ -21,8 +21,8 @@ source /local/d1/brosser/lcgeo/bin/thislcgeo.sh
 And the following commands for digi/reco:
 
 ```bash
-singularity run --nv --bind /cvmfs,/local /local/d1/badea/mu+mu-/mucoll-deploy.sif
-source /opt/setup_mucoll.sh
+export MARLIN_DLL=$(realpath /local/d1/mu+mu-/libMyBIBUtils.so):${MARLIN_DLL}
+source /cvmfs/muoncollider.cern.ch/release/2.8-patch2/setup.sh
 ```
 
 ### Tips:
