@@ -8,10 +8,10 @@ import re
 def run_marlin(input_file, bib, reco, output_directory, number_of_events):
     base_dir = "/local/d1/lrozanov/mucoll-tutorial-2023"
     if reco:
-        steering_file = f"{base_dir}/mucoll-benchmarks-LLPs/reconstruction/marlin/reco_steer.xml" # changed to Mark Larson's fork from https://github.com/mlarson02/mucoll-benchmarks-LLPs/tree/main HAVE TO EXPORT FIRST: cd /local/d1/mu+mu-/ and then export k4run_DLL=$(realpath libMyBIBUtils.so):${MARLIN_DLL}
+        steering_file = f"{base_dir}/mucoll-benchmarks-LLPs/reconstruction/marlin/reco_steer.xml" # HAVE TO EXPORT FIRST: cd /local/d1/mu+mu-/ and then export k4run_DLL=$(realpath libMyBIBUtils.so):${MARLIN_DLL}
         default_output_dir = f"{base_dir}/reco_Hbb{'_bib' if bib else ''}"
     else:
-        steering_file = f"{base_dir}/mucoll-benchmarks-LLPs/digitisation/marlin/digi_steer.xml" # changed to Mark Larson's fork from https://github.com/mlarson02/mucoll-benchmarks-LLPs/tree/main
+        steering_file = f"{base_dir}/mucoll-benchmarks-LLPs/digitisation/marlin/digi_steer.xml" # https://github.com/mlarson02/mucoll-benchmarks-LLPs/tree/main
         default_output_dir = f"{base_dir}/digi_Hbb{'_bib' if bib else ''}"
 
     if output_directory is None:
