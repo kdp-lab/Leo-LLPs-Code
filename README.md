@@ -1,11 +1,10 @@
 # Leo-LLPs-Code
 
-This repository contains code for running multi-processing over sim, digi, and reco for studying long-lived particles (LLPs). 
+This repository contains code for running multi-processing over sim, digi, and reco for studying long-lived particles (LLPs) on the workstation (kdplab01).
 
 It was necessary for me to rebuild `lcgeo` and `DD4HEP` after a new version was released with a fix for [this](https://github.com/AIDASoft/DD4hep/pull/1260) issue - TLDR: Geant4 could not read Hepmc status codes; now the status codes can be specified in the steering file.
 
 When building `lcgeo` it was necessary to replace all `dd4hep::long64` with `long long int`.
-
 
 ### Prerequisites:
 - Clone [`MuC-tutorial`](https://github.com/MuonColliderSoft/MuC-Tutorial) into this directory.
@@ -21,7 +20,8 @@ source /local/d1/brosser/lcgeo/bin/thislcgeo.sh
 And the following commands for digi/reco:
 
 ```bash
-export MARLIN_DLL=$(realpath /local/d1/mu+mu-/libMyBIBUtils.so):${MARLIN_DLL}
+cd /local/d1/mu+mu-
+export MARLIN_DLL=$(realpath libMyBIBUtils.so):${MARLIN_DLL}
 source /cvmfs/muoncollider.cern.ch/release/2.8-patch2/setup.sh
 ```
 
@@ -65,12 +65,16 @@ E.g. `nohup my_python_script.py > output.log 2>&1 &`
    ```
    Replace input_files with as many input files as you want in the form mass_lifetime.hepmc
 
+   You can use `-n` or `--number_of_events` to specify the number of events to simulate. The default is all events
+
    If `-r` is not included, the default is false
 
    If `-b` is not included, the default is false
 
-   If `-o` is not specified, the default output directory is `/local/d1/mu+mu/digi` for digi, `/local/d1/mu+mu-/digi_bib` for digi with bib, `/local/d1/mu+mu-/reco` for reco, and `/local/d1/mu+mu-/reco_bib` for reco with bib.
+   If `-o` is not specified, the default output directory is `/local/d1/mu+mu/digi` for digi, `/local/d1/mu+mu-/digi_bib` for digi with bib, `/local/d1/mu+mu-/reco` for reco, and `/local/d1/mu+mu-/reco_bib` for reco with bib
    
+   If you need to change the input directory, you can use `-i` or `--input_directory`
+
    If `-j` is not specified, the default is 1 core
    
    Example command for digi w/ bib overlaid:
